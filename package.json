@@ -1,0 +1,23 @@
+{
+  "name": "agent-sdk",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "Gopal Lalwani",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "node src/index.js"
+  },
+  "devDependencies": {
+    "@types/node": "^26.2.0",
+    "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "@google/genai": "^2.18.0",
+    "dotenv": "^17.4.2",
+    "openai": "^7.4.0",
+    "zod": "^4.4.3"
+  }
+}
