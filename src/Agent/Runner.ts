@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import { zodFunction } from "openai/helpers/zod.mjs";
+import { zodFunction, zodResponseFormat } from "openai/helpers/zod.mjs";
 import type {
     ChatCompletionMessageParam,
     ChatCompletionTool,
@@ -65,7 +65,7 @@ export class Runner {
             iteration < this.MAX_LOOP;
             iteration++
         ) {
-
+            // instead of every response to be forced to be in the particular json schema can we call a llm response at the if block where we are checking is there any tool call so that we do not have to do this for every response 
             const response =
                 await this.openai.chat.completions.create({
 
@@ -87,7 +87,7 @@ export class Runner {
                     ...(tools.length > 0 && {
                         tools,
                         tool_choice: "auto"
-                    })
+                    }),
                 });
 
             const message =
@@ -104,7 +104,23 @@ export class Runner {
 
             // No tool calls means final answer
             if (!message.tool_calls?.length) {
-                return response;
+                const structuredResponse = this.openai.chat.completions.create({
+                    model: "openai/gpt-4o",
+                    messages:[
+                        {
+                            role: 'assistant',
+                            content:message.content
+                        }
+                    ],
+                    ...(agent.outputSchema && {
+                        response_format: zodResponseFormat(
+                            agent.outputSchema,
+                            `${agent.name}_output`
+                        )
+                    })
+                    
+                })
+                return structuredResponse;
             }
 
             // Execute tools / handoffs

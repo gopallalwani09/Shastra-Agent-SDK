@@ -1,5 +1,6 @@
 import { Shastra } from "./Agent.js";
 import type { ITool } from "../types/Tool.js";
+import type { ZodType } from "zod";
 
 export class ShastraBuilder {
 
@@ -9,6 +10,7 @@ export class ShastraBuilder {
 
     private _tools: ITool<any, any>[] = [];
     private _agents: Shastra[] = [];
+    private _outputSchema?: ZodType<any>;
 
     public name(name: string) {
         this._name = name;
@@ -35,6 +37,11 @@ export class ShastraBuilder {
         return this;
     }
 
+    public outputSchema(schema: ZodType<any>) {
+        this._outputSchema = schema;
+        return this;
+    }
+
     public build(): Shastra {
 
         if (!this._name) {
@@ -54,7 +61,8 @@ export class ShastraBuilder {
             description: this._description,
             instructions: this._instructions,
             tools: this._tools,
-            agents: this._agents
+            agents: this._agents,
+            outputSchema: this._outputSchema
         });
     }
 }

@@ -1,4 +1,5 @@
 import type { ITool } from "../types/Tool.js";
+import type { ZodType } from "zod";
 
 export interface ShastraConfig {
     name: string;
@@ -7,6 +8,7 @@ export interface ShastraConfig {
 
     tools?: ITool<any, any>[];
     agents?: Shastra[];
+    outputSchema?: ZodType<any> | undefined;
 }
 
 export class Shastra {
@@ -17,6 +19,7 @@ export class Shastra {
 
     public readonly tools: ITool<any, any>[];
     public readonly agents: Shastra[];
+    public readonly outputSchema?: ZodType<any> | undefined;
 
     constructor(config: ShastraConfig) {
 
@@ -26,5 +29,6 @@ export class Shastra {
 
         this.tools = config.tools ?? [];
         this.agents = config.agents ?? [];
+        this.outputSchema = config.outputSchema;
     }
 }
