@@ -29,9 +29,9 @@ const response = await runner.run(
     "What is administration?"
 );
 
-console.log("Raw Response Content:\n", response.choices[0]?.message.content);
+console.log("Raw Response Content:\n", response);
 
-if (response.choices[0]?.message.content) {
-    const parsed = JSON.parse(response.choices[0].message.content);
+if (response) {
+    const parsed = JSON.parse(response);
     console.log("\nParsed JSON Output:\n", JSON.stringify(parsed, null, 2));
 }

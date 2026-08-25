@@ -12,7 +12,9 @@ import { Shastra } from "./Agent.js";
 import type { ITool } from "../types/Tool.js";
 import type { RunContext } from "../types/types.js";
 import { HARNESS_PROMPT } from "./config.js";
-import 'dotenv/config'
+import 'dotenv/config';
+import { checkInput } from "../guardrails/inputChecker.js";
+import { checkOutput } from "../guardrails/outputChecker.js";
 
 export class Runner {
 
@@ -33,6 +35,8 @@ export class Runner {
         agent: Shastra,
         query: string
     ) {
+
+        await checkInput(query);
 
         const context: RunContext = {
             messages: [
@@ -104,12 +108,12 @@ export class Runner {
 
             // No tool calls means final answer
             if (!message.tool_calls?.length) {
-                const structuredResponse = this.openai.chat.completions.create({
+                const structuredResponse = await this.openai.chat.completions.create({
                     model: "openai/gpt-4o",
-                    messages:[
+                    messages: [
                         {
                             role: 'assistant',
-                            content:message.content
+                            content: message.content
                         }
                     ],
                     ...(agent.outputSchema && {
@@ -118,9 +122,13 @@ export class Runner {
                             `${agent.name}_output`
                         )
                     })
-                    
+
                 })
-                return structuredResponse;
+                const finalOutput = structuredResponse.choices[0]?.message.content;
+                if (finalOutput) {
+                    await checkOutput(finalOutput);
+                }
+                return finalOutput;
             }
 
             // Execute tools / handoffs
@@ -334,10 +342,10 @@ export class Runner {
 
         // Extract final content
         const finalMessage =
-            result.choices[0]?.message;
+            result;
 
         const content =
-            finalMessage?.content ?? "";
+            finalMessage  ?? "";
 
         // Give child result back to parent agent
         context.messages.push({

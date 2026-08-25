@@ -84,5 +84,5 @@ const response = await runner.run(
 );
 
 console.log(
-    response.choices[0]?.message.content
+    response
 );
