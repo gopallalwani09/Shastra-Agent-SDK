@@ -127,23 +127,31 @@ export class Runner {
 
             // No tool calls means final answer
             if (!message.tool_calls?.length) {
-                const structuredResponse = await this.openai.chat.completions.create({
-                    model: "openai/gpt-4o",
-                    messages: [
-                        {
-                            role: 'assistant',
-                            content: message.content
-                        }
-                    ],
-                    ...(agent.outputSchema && {
+                let finalOutput: string | null | undefined = message.content;
+
+                if (agent.outputSchema) {
+                    const structuredResponse = await this.openai.chat.completions.create({
+                        model: "openai/gpt-4o",
+                        messages: [
+                            {
+                                role: 'assistant',
+                                content: message.content
+                            }
+                        ],
                         response_format: zodResponseFormat(
                             agent.outputSchema,
                             `${agent.name}_output`
                         )
-                    })
+                    });
+                    finalOutput = structuredResponse.choices[0]?.message.content;
+                    if (finalOutput) {
+                        context.messages[context.messages.length - 1] = {
+                            role: 'assistant',
+                            content: finalOutput
+                        };
+                    }
+                }
 
-                })
-                const finalOutput = structuredResponse.choices[0]?.message.content;
                 if (finalOutput) {
                     await checkOutput(finalOutput);
                 }

@@ -43,3 +43,20 @@ export type {
     MemoryExtraction,
     MemoryMakerResult
 } from "./memory/core/memory.maker.js";
+
+export {
+    startGraphUpdater,
+    stopGraphUpdater,
+    checkContextUpdated,
+    setNeedsUpdate,
+    getNeedsUpdateStatus,
+    getUpdatedContext,
+    processGraphUpdate,
+    isGraphUpdaterRunning,
+    resetGraphUpdaterState,
+    DEFAULT_UPDATE_INTERVAL_MS
+} from "./memory/backgroundProcess/graphUpdater.js";
+
+export type {
+    GraphUpdaterOptions
+} from "./memory/backgroundProcess/graphUpdater.js";
