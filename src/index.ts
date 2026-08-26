@@ -1,6 +1,6 @@
 export { Shastra } from "./Agent/Agent.js";
 export { ShastraBuilder } from "./Agent/AgentBuilder.js";
-export { Runner } from "./Agent/Runner.js";
+export { Runner, globalContext, resetGlobalContext } from "./Agent/Runner.js";
 
 export type {
     ITool
@@ -18,28 +18,28 @@ export {
     driver,
     verifyConnection,
     closeDriver
-} from "./memory/Neo4jconnect.js";
+} from "./memory/core/Neo4jconnect.js";
 
 export {
     executeQuery,
     executeQueries,
     queryExecutorTool,
     QueryExecutorInputSchema
-} from "./memory/queryExecutor.js";
+} from "./memory/core/queryExecutor.js";
 
 export type {
     QueryExecutionResult,
     QueryExecutorInput
-} from "./memory/queryExecutor.js";
+} from "./memory/core/queryExecutor.js";
 
 export {
     makeMemory,
     checkNodeExists,
     validateDuplicatePreventionGuardrail,
     MemoryExtractionSchema
-} from "./memory/memory.maker.js";
+} from "./memory/core/memory.maker.js";
 
 export type {
     MemoryExtraction,
     MemoryMakerResult
-} from "./memory/memory.maker.js";
+} from "./memory/core/memory.maker.js";

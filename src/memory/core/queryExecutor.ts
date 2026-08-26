@@ -1,6 +1,6 @@
 import neo4j from "neo4j-driver";
 import { z } from "zod";
-import type { ITool } from "../types/Tool.js";
+import type { ITool } from "../../types/Tool.js";
 import driver from "./Neo4jconnect.js";
 
 /**

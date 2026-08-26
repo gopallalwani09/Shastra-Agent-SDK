@@ -2,10 +2,10 @@ import OpenAI from "openai";
 import { z } from "zod";
 import { zodResponseFormat } from "openai/helpers/zod.mjs";
 import "dotenv/config";
-import type { RunContext } from "../types/types.js";
+import type { RunContext } from "../../types/types.js";
 import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
 import { executeQueries, executeQuery, type QueryExecutionResult } from "./queryExecutor.js";
-import { GuardrailError } from "../guardrails/guardrailError.js";
+import { GuardrailError } from "../../guardrails/guardrailError.js";
 
 const openai = new OpenAI({
     apiKey: process.env.API_KEY,
@@ -34,24 +34,39 @@ export interface MemoryMakerResult {
     error?: string;
 }
 
+import { globalContext } from "../../Agent/Runner.js";
+
 /**
- * Formats various context inputs (string, RunContext, array of messages) into a clean text prompt
+ * Formats various context inputs (string, RunContext, array of messages) into a clean text prompt.
+ * If no context is passed, automatically uses the inbuilt globalContext from Runner.
  */
-function normalizeContext(context: string | RunContext | ChatCompletionMessageParam[]): string {
-    if (typeof context === "string") {
-        return context;
+function normalizeContext(context?: string | RunContext | ChatCompletionMessageParam[]): string {
+    const target = context ?? globalContext;
+
+    if (typeof target === "string") {
+        return target;
     }
-    if ("messages" in context && Array.isArray(context.messages)) {
-        return context.messages
+
+    const messages: ChatCompletionMessageParam[] =
+        "messages" in target && Array.isArray(target.messages)
+            ? target.messages
+            : Array.isArray(target)
+                ? target
+                : [];
+
+    if (messages.length > 0) {
+        console.log(`[MemoryMaker] Inbuilt LLM Context: ${messages.length} messages found`);
+        messages.forEach((msg, idx) => {
+            const contentStr = typeof msg.content === "string" ? msg.content : JSON.stringify(msg.content ?? "");
+            console.log(`  [${idx + 1}] (${msg.role}): ${contentStr.substring(0, 80)}${contentStr.length > 80 ? "..." : ""}`);
+        });
+
+        return messages
             .map(m => `${m.role.toUpperCase()}: ${typeof m.content === "string" ? m.content : JSON.stringify(m.content)}`)
             .join("\n");
     }
-    if (Array.isArray(context)) {
-        return context
-            .map(m => `${m.role.toUpperCase()}: ${typeof m.content === "string" ? m.content : JSON.stringify(m.content)}`)
-            .join("\n");
-    }
-    return JSON.stringify(context);
+
+    return JSON.stringify(target);
 }
 
 /**
@@ -71,7 +86,7 @@ export async function checkNodeExists(
     const cleanLabel = label.replace(/[^a-zA-Z0-9_]/g, "");
     const cleanProp = propertyName.replace(/[^a-zA-Z0-9_]/g, "");
     const query = `MATCH (n:\`${cleanLabel}\` {\`${cleanProp}\`: $value}) RETURN count(n) > 0 AS nodeExists`;
-    
+
     const result = await executeQuery(query, { value: propertyValue });
     if (result.success && result.records && result.records.length > 0) {
         const firstRecord = result.records[0];
@@ -104,12 +119,12 @@ export function validateDuplicatePreventionGuardrail(queries: string[]): void {
  * (preferences, dislikes, current work, tools/technologies, topics, and relationships),
  * validates duplicate-prevention guardrails, and executes the queries in Neo4j database using queryExecutor.
  * 
- * @param context - Conversation context as a string, RunContext, or message array
+ * @param context - Optional conversation context (string, RunContext, or message array). Defaults to globalContext.
  * @param userId - Optional identifier for the user node (defaults to "default_user")
  * @returns Result containing extracted entities and Cypher query execution outputs
  */
 export async function makeMemory(
-    context: string | RunContext | ChatCompletionMessageParam[],
+    context?: string | RunContext | ChatCompletionMessageParam[],
     userId: string = "default_user"
 ): Promise<MemoryMakerResult> {
     const formattedContext = normalizeContext(context);

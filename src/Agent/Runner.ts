@@ -16,12 +16,25 @@ import 'dotenv/config';
 import { checkInput } from "../guardrails/inputChecker.js";
 import { checkOutput } from "../guardrails/outputChecker.js";
 
+export let globalContext: RunContext = {
+    messages: [],
+    depth: 0
+};
+
+export function resetGlobalContext(): void {
+    globalContext = {
+        messages: [],
+        depth: 0
+    };
+}
+
 export class Runner {
 
     private readonly openai: OpenAI;
 
     private readonly MAX_LOOP = 30;
     private readonly MAX_DEPTH = 10;
+    public context: RunContext = globalContext;
 
     constructor() {
 
@@ -31,6 +44,15 @@ export class Runner {
         });
     }
 
+    public getContext(): RunContext {
+        return globalContext;
+    }
+
+    public resetContext(): void {
+        resetGlobalContext();
+        this.context = globalContext;
+    }
+
     public async run(
         agent: Shastra,
         query: string
@@ -38,17 +60,14 @@ export class Runner {
 
         await checkInput(query);
 
-        const context: RunContext = {
-            messages: [
-                {
-                    role: "user",
-                    content: query
-                }
-            ],
-            depth: 0
-        };
+        globalContext.messages.push({
+            role: "user",
+            content: query
+        });
+        globalContext.depth = 0;
+        this.context = globalContext;
 
-        return this.execute(agent, context);
+        return this.execute(agent, globalContext);
     }
 
     private async execute(
