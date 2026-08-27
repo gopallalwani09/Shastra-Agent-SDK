@@ -1,7 +1,7 @@
 import neo4j from "neo4j-driver";
 import { z } from "zod";
 import type { ITool } from "../../types/Tool.js";
-import driver from "./Neo4jconnect.js";
+import driver, { getDriver } from "./Neo4jconnect.js";
 
 /**
  * Zod schema for Cypher query execution input
@@ -69,7 +69,7 @@ export async function executeQuery(
     query: string,
     params: Record<string, unknown> = {}
 ): Promise<QueryExecutionResult> {
-    const session = driver.session();
+    const session = getDriver().session();
     try {
         const result = await session.run(query, params);
         

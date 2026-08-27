@@ -1,6 +1,7 @@
 import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
 import { globalContext } from "../../Agent/Runner.js";
 import { makeMemory, type MemoryMakerResult } from "../core/memory.maker.js";
+import { initNeo4j, verifyConnection, closeDriver, ensureGraphConstraints, type Neo4jCredentials } from "../core/Neo4jconnect.js";
 
 /**
  * Default interval of 2 minutes (in milliseconds)
@@ -12,6 +13,7 @@ let lastProcessedMessageIndex: number = 0;
 let needsUpdate: boolean = false;
 let isProcessing: boolean = false;
 let updateIntervalTimer: ReturnType<typeof setInterval> | null = null;
+let currentProcessingPromise: Promise<MemoryMakerResult | null> | null = null;
 
 /**
  * Checks if the globalContext has new messages that haven't been processed yet.
@@ -70,79 +72,106 @@ export async function processGraphUpdate(
 ): Promise<MemoryMakerResult | null> {
     // 1. Check if context has been updated
     if (!checkContextUpdated()) {
-        console.log("[GraphUpdater] No new context updates detected. Skipping memory graph sync.");
         return null;
     }
 
     // 2. Prevent concurrent processing runs
     if (isProcessing) {
-        console.log("[GraphUpdater] Memory graph update is already in progress. Skipping this cycle.");
         return null;
     }
 
     isProcessing = true;
-    const targetEndIndex = globalContext.messages.length;
 
-    try {
-        // 3. Extract only the delta (new context messages)
-        const deltaMessages = getUpdatedContext();
+    const task = (async (): Promise<MemoryMakerResult | null> => {
+        const targetEndIndex = globalContext.messages.length;
 
-        if (deltaMessages.length === 0) {
+        try {
+            // 3. Extract only the delta (new context messages)
+            const deltaMessages = getUpdatedContext();
+
+            if (deltaMessages.length === 0) {
+                needsUpdate = false;
+                return null;
+            }
+
+            console.log(`[GraphUpdater] Processing memory update with ${deltaMessages.length} new message(s)...`);
+
+            // 4. Run makeMemory with the updated context slice
+            const result = await makeMemory(deltaMessages, userId);
+
+            // 5. Update index tracker and reset update flag upon completion
+            lastProcessedMessageIndex = targetEndIndex;
             needsUpdate = false;
-            return null;
+
+            console.log(
+                `[GraphUpdater] Graph update complete. Success: ${result.success}. Extracted ${result.extracted.entities.length} entities & ${result.extracted.queries.length} queries.`
+            );
+
+            return result;
+        } catch (error) {
+            console.error("[GraphUpdater] Error updating memory graph:", error);
+            throw error;
+        } finally {
+            isProcessing = false;
+            currentProcessingPromise = null;
         }
+    })();
 
-        console.log(`[GraphUpdater] Processing memory update with ${deltaMessages.length} new message(s)...`);
-
-        // 4. Run pre-existing makeMemory function with the updated context slice
-        const result = await makeMemory(deltaMessages, userId);
-
-        // 5. Update index tracker and reset update flag upon completion
-        lastProcessedMessageIndex = targetEndIndex;
-        needsUpdate = false;
-
-        console.log(
-            `[GraphUpdater] Graph update complete. Success: ${result.success}. Extracted ${result.extracted.entities.length} entities & ${result.extracted.queries.length} queries.`
-        );
-
-        return result;
-    } catch (error) {
-        console.error("[GraphUpdater] Error updating memory graph:", error);
-        throw error;
-    } finally {
-        isProcessing = false;
-    }
+    currentProcessingPromise = task;
+    return task;
 }
 
 /**
  * Configuration options for background graph updater
  */
 export interface GraphUpdaterOptions {
+    /** Neo4j database credentials (uri, username, password) */
+    credentials?: Neo4jCredentials;
     /** Interval in milliseconds between checks (default: 2 minutes / 120,000 ms) */
     intervalMs?: number;
     /** User ID to associate with the memory graph (default: "default_user") */
     userId?: string;
     /** If true, runs an initial update immediately upon starting */
     runImmediately?: boolean;
+    /** If true, verifies database connection before starting (default: true) */
+    verifyOnStart?: boolean;
 }
 
 /**
- * Starts the background graph updater interval (default: 2 minutes).
+ * Starts the background graph updater interval with user credentials (default: 2 minutes).
  * On each tick, checks if the global context is updated, extracts the delta context,
  * and runs `makeMemory` to sync the graph database.
  *
- * @param options - Configuration options for the background updater
+ * @param options - Configuration options and database credentials for the background updater
+ * @returns The setInterval timer reference
  */
 export function startGraphUpdater(options: GraphUpdaterOptions = {}): ReturnType<typeof setInterval> {
     const {
+        credentials,
         intervalMs = DEFAULT_UPDATE_INTERVAL_MS,
         userId = "default_user",
-        runImmediately = false
+        runImmediately = false,
+        verifyOnStart = true
     } = options;
 
     if (updateIntervalTimer !== null) {
         console.warn("[GraphUpdater] Background updater is already running.");
         return updateIntervalTimer;
+    }
+
+    // Initialize Neo4j driver with user credentials if provided
+    if (credentials) {
+        initNeo4j(credentials);
+    }
+
+    if (verifyOnStart) {
+        verifyConnection().then(connected => {
+            if (connected) {
+                ensureGraphConstraints().catch(() => {});
+            }
+        }).catch(err => {
+            console.warn("[GraphUpdater] Connection verification check failed on start:", err);
+        });
     }
 
     console.log(`[GraphUpdater] Starting background memory graph updater (Interval: ${intervalMs / 1000}s)`);
@@ -161,19 +190,51 @@ export function startGraphUpdater(options: GraphUpdaterOptions = {}): ReturnType
         }
     }, intervalMs);
 
+    // Unref timer in Node.js so it does not prevent clean process exit if left running
+    if (typeof updateIntervalTimer === "object" && "unref" in updateIntervalTimer) {
+        (updateIntervalTimer as NodeJS.Timeout).unref();
+    }
+
     return updateIntervalTimer;
 }
 
 /**
- * Stops the background graph updater interval.
+ * Alias for startGraphUpdater with credentials.
  */
-export function stopGraphUpdater(): void {
+export const startGraphMemory = startGraphUpdater;
+
+/**
+ * Stops the background graph updater interval, awaits any in-flight background update,
+ * and optionally closes the database driver.
+ *
+ * @param closeConnection - Optional boolean to also close the Neo4j driver connection (default: false)
+ */
+export async function stopGraphUpdater(closeConnection: boolean = false): Promise<void> {
     if (updateIntervalTimer !== null) {
         clearInterval(updateIntervalTimer);
         updateIntervalTimer = null;
         console.log("[GraphUpdater] Background memory graph updater stopped.");
     }
+
+    // Await any in-flight background memory update so it finishes cleanly before closing connections
+    if (currentProcessingPromise) {
+        console.log("[GraphUpdater] Waiting for in-flight memory graph sync to complete...");
+        try {
+            await currentProcessingPromise;
+        } catch {
+            // Ignore error during shutdown drain
+        }
+    }
+
+    if (closeConnection) {
+        await closeDriver();
+    }
 }
+
+/**
+ * Alias for stopGraphUpdater.
+ */
+export const stopGraphMemory = stopGraphUpdater;
 
 /**
  * Checks if the background graph updater is currently active.
@@ -187,10 +248,12 @@ export function isGraphUpdaterRunning(): boolean {
  * Useful for tests or session resets.
  */
 export function resetGraphUpdaterState(): void {
-    stopGraphUpdater();
+    if (updateIntervalTimer !== null) {
+        clearInterval(updateIntervalTimer);
+        updateIntervalTimer = null;
+    }
     lastProcessedMessageIndex = 0;
     needsUpdate = false;
     isProcessing = false;
+    currentProcessingPromise = null;
 }
-
-// In this file we have todo 2 things firstly we have to create a function which will ccheck if the global context is updated if yes it will mark any varible as need update then we have to run our preexisting functions which will update the graph function but only when the variable says needs update and that too after 2 minutes so the flow would be we will set a interval in which we will first check if context is updated if yes then we have to get the updated context from the globalcontext so that we do not give a lot of info to llm for making cypher queries then we will run our memory functions for storing the info in graphdb and the time for setinterval would be 2 minutes

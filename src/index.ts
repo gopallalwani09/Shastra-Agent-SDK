@@ -16,8 +16,15 @@ export type {
 
 export {
     driver,
+    initNeo4j,
+    getDriver,
     verifyConnection,
-    closeDriver
+    closeDriver,
+    ensureGraphConstraints
+} from "./memory/core/Neo4jconnect.js";
+
+export type {
+    Neo4jCredentials
 } from "./memory/core/Neo4jconnect.js";
 
 export {
@@ -47,6 +54,8 @@ export type {
 export {
     startGraphUpdater,
     stopGraphUpdater,
+    startGraphMemory,
+    stopGraphMemory,
     checkContextUpdated,
     setNeedsUpdate,
     getNeedsUpdateStatus,
@@ -59,4 +68,4 @@ export {
 
 export type {
     GraphUpdaterOptions
-} from "./memory/backgroundProcess/graphUpdater.js";
+} from "./memory/backgroundProcess/graphUpdater.js";
