@@ -15,6 +15,7 @@ import { HARNESS_PROMPT } from "./config.js";
 import 'dotenv/config';
 import { checkInput } from "../guardrails/inputChecker.js";
 import { checkOutput } from "../guardrails/outputChecker.js";
+import { isUsingGraphDb, makeQueryContext } from "../memory/backgroundProcess/contextMaker.js";
 
 export let globalContext: RunContext = {
     messages: [],
@@ -67,12 +68,22 @@ export class Runner {
         globalContext.depth = 0;
         this.context = globalContext;
 
-        return this.execute(agent, globalContext);
+        let queryContext = "";
+        if (isUsingGraphDb()) {
+            try {
+                queryContext = await makeQueryContext(query);
+            } catch (error) {
+                console.warn("[Runner] Failed to retrieve graph context for query:", error);
+            }
+        }
+
+        return this.execute(agent, globalContext, queryContext);
     }
 
     private async execute(
         agent: Shastra,
-        context: RunContext
+        context: RunContext,
+        queryContext: string = ""
     ) {
 
         if (context.depth > this.MAX_DEPTH) {
@@ -102,6 +113,7 @@ export class Runner {
 
                                 Agent Instructions:
                                 ${agent.instructions}
+                                ${queryContext ? `\n\nRelevant Knowledge Graph Context:\n${queryContext}` : ""}
                             `
                         },
                         ...context.messages

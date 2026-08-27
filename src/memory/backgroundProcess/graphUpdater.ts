@@ -14,6 +14,21 @@ let needsUpdate: boolean = false;
 let isProcessing: boolean = false;
 let updateIntervalTimer: ReturnType<typeof setInterval> | null = null;
 let currentProcessingPromise: Promise<MemoryMakerResult | null> | null = null;
+let activeUserId: string = "default_user";
+
+/**
+ * Gets the current active user ID configured for graph memory operations.
+ */
+export function getActiveUserId(): string {
+    return activeUserId;
+}
+
+/**
+ * Sets the active user ID for graph memory operations.
+ */
+export function setActiveUserId(userId: string): void {
+    activeUserId = userId;
+}
 
 /**
  * Checks if the globalContext has new messages that haven't been processed yet.
@@ -159,6 +174,8 @@ export function startGraphUpdater(options: GraphUpdaterOptions = {}): ReturnType
         return updateIntervalTimer;
     }
 
+    activeUserId = userId;
+
     // Initialize Neo4j driver with user credentials if provided
     if (credentials) {
         initNeo4j(credentials);
@@ -256,4 +273,5 @@ export function resetGraphUpdaterState(): void {
     needsUpdate = false;
     isProcessing = false;
     currentProcessingPromise = null;
+    activeUserId = "default_user";
 }

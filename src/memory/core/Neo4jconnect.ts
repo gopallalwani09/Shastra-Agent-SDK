@@ -55,6 +55,15 @@ export function getDriver(): Driver {
 }
 
 /**
+ * Checks if the Neo4j driver has been explicitly initialized and active.
+ *
+ * @returns boolean indicating whether activeDriver is present
+ */
+export function isNeo4jInitialized(): boolean {
+    return activeDriver !== null;
+}
+
+/**
  * Helper function to verify the connection to the Neo4j database.
  *
  * @param target - Optional credentials or Driver instance to verify

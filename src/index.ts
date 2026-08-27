@@ -20,7 +20,8 @@ export {
     getDriver,
     verifyConnection,
     closeDriver,
-    ensureGraphConstraints
+    ensureGraphConstraints,
+    isNeo4jInitialized
 } from "./memory/core/Neo4jconnect.js";
 
 export type {
@@ -63,9 +64,23 @@ export {
     processGraphUpdate,
     isGraphUpdaterRunning,
     resetGraphUpdaterState,
+    getActiveUserId,
+    setActiveUserId,
     DEFAULT_UPDATE_INTERVAL_MS
 } from "./memory/backgroundProcess/graphUpdater.js";
 
 export type {
     GraphUpdaterOptions
 } from "./memory/backgroundProcess/graphUpdater.js";
+
+export {
+    makeQueryContext,
+    getQueryContext,
+    isUsingGraphDb,
+    setGraphDbEnabled,
+    ContextRetrievalSchema
+} from "./memory/backgroundProcess/contextMaker.js";
+
+export type {
+    ContextRetrieval
+} from "./memory/backgroundProcess/contextMaker.js";
