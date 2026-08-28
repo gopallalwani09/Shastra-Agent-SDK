@@ -4,6 +4,26 @@
   "description": "SDK for building AI agents with graph memory support",
   "license": "ISC",
   "author": "Gopal Lalwani",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gopallalwani09/Shastra-Agent-SDK.git"
+  },
+  "bugs": {
+    "url": "https://github.com/gopallalwani09/Shastra-Agent-SDK/issues"
+  },
+  "homepage": "https://github.com/gopallalwani09/Shastra-Agent-SDK#readme",
+  "keywords": [
+    "ai",
+    "agent",
+    "sdk",
+    "neo4j",
+    "graph-memory",
+    "knowledge-graph",
+    "multi-agent",
+    "llm",
+    "guardrails",
+    "openai"
+  ],
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
