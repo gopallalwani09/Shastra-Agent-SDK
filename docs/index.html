@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Shastra SDK — AI Agents with Graph Memory</title>
+    <meta name="description" content="Shastra is a TypeScript SDK for building powerful multi-agent AI systems with persistent graph memory backed by Neo4j." />
+    <meta property="og:title" content="Shastra SDK" />
+    <meta property="og:description" content="Build AI agents with persistent graph memory. Multi-agent orchestration, typed tools, built-in guardrails." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+    <!-- NAV -->
+    <nav id="navbar">
+        <div class="nav-inner">
+            <a href="#hero" class="nav-logo">
+                <span class="logo-icon">◈</span>
+                <span class="logo-text">shastra<span class="logo-accent">-sdk</span></span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="#features" class="nav-link">Features</a></li>
+                <li><a href="#quickstart" class="nav-link">Quick Start</a></li>
+                <li><a href="#api" class="nav-link">API</a></li>
+                <li><a href="#memory" class="nav-link">Memory</a></li>
+                <li><a href="#guardrails" class="nav-link">Guardrails</a></li>
+            </ul>
+            <div class="nav-actions">
+                <a href="https://www.npmjs.com/package/shastra-sdk" target="_blank" class="btn btn-ghost" id="npm-btn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M0 0h24v24H0V0zm1.333 21.333V5.333H22.667v16H12v-8H8v8z"/></svg>
+                    npm
+                </a>
+                <a href="https://github.com/gopallalwani09/Shastra-Agent-SDK" target="_blank" class="btn btn-primary" id="github-btn">GitHub →</a>
+            </div>
+            <button class="mobile-toggle" id="mobile-toggle" aria-label="Toggle menu">☰</button>
+        </div>
+    </nav>
+
+    <!-- MOBILE MENU -->
+    <div class="mobile-menu" id="mobile-menu">
+        <a href="#features" class="mobile-link">Features</a>
+        <a href="#quickstart" class="mobile-link">Quick Start</a>
+        <a href="#api" class="mobile-link">API Reference</a>
+        <a href="#memory" class="mobile-link">Graph Memory</a>
+        <a href="#guardrails" class="mobile-link">Guardrails</a>
+    </div>
+
+    <!-- HERO -->
+    <section id="hero">
+        <canvas id="hero-canvas"></canvas>
+        <div class="hero-content">
+            <div class="hero-badge">
+                <span class="badge-dot"></span>
+                v1.0.0 · TypeScript · OpenAI Compatible
+            </div>
+            <h1 class="hero-title">
+                Build AI Agents<br/>
+                <span class="gradient-text">That Remember.</span>
+            </h1>
+            <p class="hero-subtitle">
+                Shastra is a TypeScript SDK for building powerful multi-agent AI systems with persistent
+                graph memory backed by Neo4j. Define tools, compose agent hierarchies, and let your AI
+                remember <em>everything</em> — across sessions.
+            </p>
+            <div class="hero-actions">
+                <a href="#quickstart" class="btn btn-primary btn-large" id="get-started-btn">Get Started →</a>
+                <a href="#api" class="btn btn-ghost btn-large" id="api-ref-btn">API Reference</a>
+            </div>
+            <div class="hero-install">
+                <code id="install-cmd">npm install shastra-sdk</code>
+                <button class="copy-btn" onclick="copyInstall()" title="Copy" id="copy-install-btn">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                </button>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="graph-container" id="graph-anim">
+                <svg id="graph-svg" viewBox="0 0 420 320" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Edges -->
+                    <line class="edge" x1="210" y1="160" x2="90" y2="90" />
+                    <line class="edge" x1="210" y1="160" x2="330" y2="90" />
+                    <line class="edge" x1="210" y1="160" x2="330" y2="240" />
+                    <line class="edge" x1="210" y1="160" x2="90" y2="240" />
+                    <line class="edge" x1="210" y1="160" x2="210" y2="50" />
+                    <line class="edge" x1="90" y1="90" x2="90" y2="240" />
+                    <line class="edge" x1="330" y1="90" x2="330" y2="240" />
+                    <line class="edge edge-dim" x1="90" y1="90" x2="210" y2="50" />
+                    <line class="edge edge-dim" x1="330" y1="90" x2="210" y2="50" />
+                    <!-- Labels -->
+                    <text class="edge-label" x="144" y="117">WORKS_WITH</text>
+                    <text class="edge-label" x="264" y="117">LIKES</text>
+                    <text class="edge-label" x="265" y="210">WORKS_ON</text>
+                    <text class="edge-label" x="102" y="210">KNOWS</text>
+                    <!-- Nodes -->
+                    <g class="node node-user" transform="translate(210,160)">
+                        <circle r="28" />
+                        <text class="node-label" dy="-4">User</text>
+                        <text class="node-sub" dy="10">:id</text>
+                    </g>
+                    <g class="node node-tech" transform="translate(90,90)">
+                        <circle r="22" />
+                        <text class="node-label">Tech</text>
+                    </g>
+                    <g class="node node-pref" transform="translate(330,90)">
+                        <circle r="22" />
+                        <text class="node-label">Pref</text>
+                    </g>
+                    <g class="node node-proj" transform="translate(330,240)">
+                        <circle r="22" />
+                        <text class="node-label">Project</text>
+                    </g>
+                    <g class="node node-person" transform="translate(90,240)">
+                        <circle r="22" />
+                        <text class="node-label">Person</text>
+                    </g>
+                    <g class="node node-topic" transform="translate(210,50)">
+                        <circle r="18" />
+                        <text class="node-label">Topic</text>
+                    </g>
+                </svg>
+            </div>
+        </div>
+    </section>
+
+    <!-- STATS BAR -->
+    <div class="stats-bar">
+        <div class="stat-item">
+            <span class="stat-num">6+</span>
+            <span class="stat-label">Node Types</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+            <span class="stat-num">7</span>
+            <span class="stat-label">Relationship Types</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+            <span class="stat-num">30+</span>
+            <span class="stat-label">Exported APIs</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+            <span class="stat-num">∞</span>
+            <span class="stat-label">Memory Depth</span>
+        </div>
+    </div>
+
+    <!-- FEATURES -->
+    <section id="features" class="section">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Why Shastra</span>
+                <h2 class="section-title">Everything you need to build<br/>intelligent agents</h2>
+            </div>
+            <div class="features-grid">
+
+                <div class="feature-card card-accent-amber">
+                    <div class="feature-icon">🤖</div>
+                    <h3>Multi-Agent Orchestration</h3>
+                    <p>Create hierarchies of agents that automatically hand off tasks to specialized sub-agents. Build complex workflows with ease.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🧩</div>
+                    <h3>Typed Tool System</h3>
+                    <p>Define type-safe tools with Zod schema validation. Inputs are automatically validated before execution — no runtime surprises.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🧠</div>
+                    <h3>Graph Memory</h3>
+                    <p>Persistent user memory backed by a Neo4j knowledge graph. Your agents remember preferences, projects, and relationships across sessions.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🔄</div>
+                    <h3>Background Memory Sync</h3>
+                    <p>The graph updater runs silently in the background, extracting memories from every conversation turn using a configurable interval.</p>
+                </div>
+
+                <div class="feature-card card-accent-amber">
+                    <div class="feature-icon">🛡️</div>
+                    <h3>Built-in Guardrails</h3>
+                    <p>LLM-powered safety checks on every input and output. Block harmful content, leaked credentials, and policy violations automatically.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">📐</div>
+                    <h3>Structured Outputs</h3>
+                    <p>Force agents to respond in a Zod-validated JSON schema using OpenAI's structured response format. Type-safe agent outputs.</p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- QUICK START -->
+    <section id="quickstart" class="section section-dark">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Quick Start</span>
+                <h2 class="section-title">Up and running in minutes</h2>
+            </div>
+
+            <div class="tabs-container">
+                <div class="tabs" role="tablist">
+                    <button class="tab active" onclick="showTab('basic')" id="tab-basic" role="tab">Basic Agent</button>
+                    <button class="tab" onclick="showTab('tools')" id="tab-tools" role="tab">With Tools</button>
+                    <button class="tab" onclick="showTab('multiagent')" id="tab-multiagent" role="tab">Multi-Agent</button>
+                    <button class="tab" onclick="showTab('memory')" id="tab-memory-qs" role="tab">With Memory</button>
+                </div>
+
+                <div class="tab-content active" id="panel-basic">
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-lang">TypeScript</span>
+                            <button class="copy-code-btn" onclick="copyCode('code-basic')" id="copy-basic-btn">Copy</button>
+                        </div>
+                        <pre id="code-basic"><code><span class="kw">import</span> { Shastra, Runner } <span class="kw">from</span> <span class="str">'shastra-sdk'</span>;
+
+<span class="kw">const</span> agent = <span class="kw">new</span> <span class="cls">Shastra</span>({
+  name: <span class="str">'assistant'</span>,
+  description: <span class="str">'A helpful AI assistant'</span>,
+  instructions: <span class="str">'You are a helpful assistant.'</span>
+});
+
+<span class="kw">const</span> runner = <span class="kw">new</span> <span class="cls">Runner</span>();
+<span class="kw">const</span> result = <span class="kw">await</span> runner.<span class="fn">run</span>(agent, <span class="str">'Hello!'</span>);
+console.<span class="fn">log</span>(result);</code></pre>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="panel-tools">
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-lang">TypeScript</span>
+                            <button class="copy-code-btn" onclick="copyCode('code-tools')" id="copy-tools-btn">Copy</button>
+                        </div>
+                        <pre id="code-tools"><code><span class="kw">import</span> { Shastra, Runner } <span class="kw">from</span> <span class="str">'shastra-sdk'</span>;
+<span class="kw">import type</span> { ITool } <span class="kw">from</span> <span class="str">'shastra-sdk'</span>;
+<span class="kw">import</span> { z } <span class="kw">from</span> <span class="str">'zod'</span>;
+
+<span class="kw">const</span> weatherTool: <span class="cls">ITool</span>&lt;{ city: <span class="tp">string</span> }, <span class="tp">string</span>&gt; = {
+  name: <span class="str">'get_weather'</span>,
+  description: <span class="str">'Get the weather for a city'</span>,
+  inputSchema: z.<span class="fn">object</span>({ city: z.<span class="fn">string</span>() }),
+  executor: <span class="kw">async</span> ({ city }) =&gt; {
+    <span class="kw">return</span> <span class="str">`It's sunny in ${city}`</span>;
+  }
+};
+
+<span class="kw">const</span> agent = <span class="kw">new</span> <span class="cls">Shastra</span>({
+  name: <span class="str">'weather_bot'</span>,
+  description: <span class="str">'Weather assistant'</span>,
+  instructions: <span class="str">'Use get_weather to answer weather questions.'</span>,
+  tools: [weatherTool]
+});
+
+<span class="kw">const</span> runner = <span class="kw">new</span> <span class="cls">Runner</span>();
+<span class="kw">await</span> runner.<span class="fn">run</span>(agent, <span class="str">'Weather in Mumbai?'</span>);</code></pre>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="panel-multiagent">
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-lang">TypeScript</span>
+                            <button class="copy-code-btn" onclick="copyCode('code-multi')" id="copy-multi-btn">Copy</button>
+                        </div>
+                        <pre id="code-multi"><code><span class="kw">import</span> { Shastra, Runner } <span class="kw">from</span> <span class="str">'shastra-sdk'</span>;
+
+<span class="cmt">// Sub-agents</span>
+<span class="kw">const</span> codeAgent = <span class="kw">new</span> <span class="cls">Shastra</span>({
+  name: <span class="str">'code_writer'</span>,
+  description: <span class="str">'Writes clean, well-commented code'</span>,
+  instructions: <span class="str">'You are an expert programmer.'</span>
+});
+
+<span class="kw">const</span> reviewAgent = <span class="kw">new</span> <span class="cls">Shastra</span>({
+  name: <span class="str">'code_reviewer'</span>,
+  description: <span class="str">'Reviews code for quality'</span>,
+  instructions: <span class="str">'You are a senior code reviewer.'</span>
+});
+
+<span class="cmt">// Orchestrator with sub-agents</span>
+<span class="kw">const</span> orchestrator = <span class="kw">new</span> <span class="cls">Shastra</span>({
+  name: <span class="str">'orchestrator'</span>,
+  description: <span class="str">'Coordinates coding tasks'</span>,
+  instructions: <span class="str">'Delegate to specialists as needed.'</span>,
+  agents: [codeAgent, reviewAgent]
+});
+
+<span class="kw">const</span> runner = <span class="kw">new</span> <span class="cls">Runner</span>();
+<span class="kw">await</span> runner.<span class="fn">run</span>(orchestrator, <span class="str">'Write and review a binary search.'</span>);</code></pre>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="panel-memory">
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-lang">index.ts</span>
+                            <button class="copy-code-btn" onclick="copyCode('code-mem')" id="copy-mem-btn">Copy</button>
+                        </div>
+                        <pre id="code-mem"><code><span class="kw">import</span> {
+  Shastra, Runner,
+  initNeo4j, verifyConnection, ensureGraphConstraints,
+  startGraphMemory, stopGraphMemory,
+  makeMemory
+} <span class="kw">from</span> <span class="str">'shastra-sdk'</span>;
+
+<span class="cmt">// ═══════════════════════════════════════════
+// 1. INIT  —  connect to Neo4j
+// ═══════════════════════════════════════════</span>
+<span class="fn">initNeo4j</span>({
+  uri:      <span class="str">'bolt://localhost:7687'</span>,
+  username: <span class="str">'neo4j'</span>,
+  password: <span class="str">'your_password'</span>
+});
+
+<span class="kw">const</span> ok = <span class="kw">await</span> <span class="fn">verifyConnection</span>();
+<span class="kw">if</span> (!ok) <span class="kw">throw new</span> <span class="cls">Error</span>(<span class="str">'Cannot reach Neo4j — check your credentials'</span>);
+
+<span class="cmt">// Create uniqueness constraints so MERGE never duplicates nodes.
+// Safe to call every startup — it's idempotent.</span>
+<span class="kw">await</span> <span class="fn">ensureGraphConstraints</span>();
+
+<span class="cmt">// ═══════════════════════════════════════════
+// 2. START  —  launch background memory sync
+// ═══════════════════════════════════════════</span>
+<span class="cmt">// Every 2 minutes the SDK checks globalContext for new messages,
+// extracts entities (preferences, technologies, projects, …),
+// and writes them to Neo4j using generated Cypher MERGE queries.</span>
+<span class="fn">startGraphMemory</span>({
+  userId:         <span class="str">'user_123'</span>,
+  intervalMs:     <span class="num">2 * 60 * 1000</span>,  <span class="cmt">// 2 minutes</span>
+  runImmediately: <span class="kw">false</span>,            <span class="cmt">// wait until first message arrives</span>
+  verifyOnStart:  <span class="kw">true</span>             <span class="cmt">// ping DB once before starting timer</span>
+});
+
+<span class="cmt">// ═══════════════════════════════════════════
+// 3. USE  —  run your agent
+// ═══════════════════════════════════════════</span>
+<span class="kw">const</span> agent = <span class="kw">new</span> <span class="cls">Shastra</span>({
+  name:         <span class="str">'assistant'</span>,
+  description:  <span class="str">'A personalized AI assistant with long-term memory'</span>,
+  instructions: <span class="str">'You are a helpful assistant. Use the Knowledge Graph</span>
+<span class="str">                 Context provided to personalize your responses.'</span>
+});
+
+<span class="kw">const</span> runner = <span class="kw">new</span> <span class="cls">Runner</span>();
+
+<span class="cmt">// Tell the agent something about yourself.
+// This message lands in globalContext — the background sync
+// will pick it up and write it to Neo4j in the next interval.</span>
+<span class="kw">await</span> runner.<span class="fn">run</span>(agent, <span class="str">'I love building with TypeScript. I hate writing YAML.'</span>);
+
+<span class="cmt">// On the next run(), the SDK automatically:
+//  • Queries Neo4j for context relevant to the user's message
+//  • Injects that context into the agent's system prompt
+//  • The LLM sees: "- WORKS_WITH: TypeScript [Type: Language]
+//                   - DISLIKES: YAML [Category: DevOps]"</span>
+<span class="kw">const</span> reply = <span class="kw">await</span> runner.<span class="fn">run</span>(agent, <span class="str">'What config format should I use?'</span>);
+console.<span class="fn">log</span>(reply);
+<span class="cmt">// → "Since you prefer TypeScript and dislike YAML, consider
+//    using TypeScript config files (e.g. vite.config.ts)..."</span>
+
+<span class="cmt">// Optional: force a memory save right now instead of waiting
+// for the next background tick.</span>
+<span class="kw">const</span> mem = <span class="kw">await</span> <span class="fn">makeMemory</span>(<span class="kw">undefined</span>, <span class="str">'user_123'</span>);
+console.<span class="fn">log</span>(`Saved ${mem.extracted.entities.<span class="fn">length</span>} entities to Neo4j`);
+
+<span class="cmt">// ═══════════════════════════════════════════
+// 4. STOP  —  graceful shutdown
+// ═══════════════════════════════════════════</span>
+<span class="cmt">// Drains any in-flight memory sync, then closes the Neo4j driver.</span>
+process.<span class="fn">on</span>(<span class="str">'SIGINT'</span>,  <span class="kw">async</span> () => { <span class="kw">await</span> <span class="fn">stopGraphMemory</span>(<span class="kw">true</span>); process.<span class="fn">exit</span>(<span class="num">0</span>); });
+process.<span class="fn">on</span>(<span class="str">'SIGTERM'</span>, <span class="kw">async</span> () => { <span class="kw">await</span> <span class="fn">stopGraphMemory</span>(<span class="kw">true</span>); process.<span class="fn">exit</span>(<span class="num">0</span>); });</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- API REFERENCE -->
+    <section id="api" class="section">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">API Reference</span>
+                <h2 class="section-title">Core Classes &amp; Interfaces</h2>
+            </div>
+
+            <!-- Shastra Class -->
+            <div class="api-block" id="api-shastra">
+                <div class="api-block-header">
+                    <div class="api-badge badge-class">class</div>
+                    <h3 class="api-name">Shastra</h3>
+                    <span class="api-import">from 'shastra-sdk'</span>
+                </div>
+                <p class="api-desc">The core agent class. Accepts a <code>ShastraConfig</code> and exposes read-only agent properties.</p>
+
+                <div class="api-table-wrap">
+                    <table class="api-table">
+                        <thead><tr><th>Property</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr><td><code>name</code></td><td><span class="tp-badge">string</span></td><td><span class="req-yes">Yes</span></td><td>Unique agent identifier. Used in handoff tool names.</td></tr>
+                            <tr><td><code>description</code></td><td><span class="tp-badge">string</span></td><td><span class="req-yes">Yes</span></td><td>What this agent does. Shown to the orchestrating LLM.</td></tr>
+                            <tr><td><code>instructions</code></td><td><span class="tp-badge">string</span></td><td><span class="req-yes">Yes</span></td><td>System prompt injected before every LLM call.</td></tr>
+                            <tr><td><code>tools</code></td><td><span class="tp-badge">ITool[]</span></td><td><span class="req-no">No</span></td><td>Array of tools available to this agent.</td></tr>
+                            <tr><td><code>agents</code></td><td><span class="tp-badge">Shastra[]</span></td><td><span class="req-no">No</span></td><td>Sub-agents this agent can hand off to.</td></tr>
+                            <tr><td><code>outputSchema</code></td><td><span class="tp-badge">ZodType</span></td><td><span class="req-no">No</span></td><td>If set, forces structured JSON output matching this schema.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ShastraBuilder -->
+            <div class="api-block" id="api-builder">
+                <div class="api-block-header">
+                    <div class="api-badge badge-class">class</div>
+                    <h3 class="api-name">ShastraBuilder</h3>
+                    <span class="api-import">from 'shastra-sdk'</span>
+                </div>
+                <p class="api-desc">Fluent builder for creating <code>Shastra</code> agents with a chainable API.</p>
+                <div class="code-block compact">
+                    <pre><code><span class="kw">new</span> <span class="cls">ShastraBuilder</span>()
+  .<span class="fn">name</span>(<span class="str">'my_agent'</span>)
+  .<span class="fn">description</span>(<span class="str">'...'</span>)
+  .<span class="fn">instructions</span>(<span class="str">'...'</span>)
+  .<span class="fn">tool</span>(myTool)
+  .<span class="fn">agent</span>(subAgent)
+  .<span class="fn">outputSchema</span>(zodSchema)
+  .<span class="fn">build</span>();   <span class="cmt">// returns Shastra</span></code></pre>
+                </div>
+            </div>
+
+            <!-- Runner -->
+            <div class="api-block" id="api-runner">
+                <div class="api-block-header">
+                    <div class="api-badge badge-class">class</div>
+                    <h3 class="api-name">Runner</h3>
+                    <span class="api-import">from 'shastra-sdk'</span>
+                </div>
+                <p class="api-desc">The execution engine that drives agents through their tool-use loop.</p>
+                <div class="api-table-wrap">
+                    <table class="api-table">
+                        <thead><tr><th>Method</th><th>Signature</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr><td><code>run()</code></td><td><span class="tp-badge">async (agent, query) → string | null</span></td><td>Runs an agent. Checks input guardrail, fetches graph context, executes tool loop, checks output guardrail.</td></tr>
+                            <tr><td><code>getContext()</code></td><td><span class="tp-badge">() → RunContext</span></td><td>Returns the current global conversation context.</td></tr>
+                            <tr><td><code>resetContext()</code></td><td><span class="tp-badge">() → void</span></td><td>Clears all conversation history.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="api-note">
+                    <span class="note-icon">ℹ</span>
+                    The Runner has a <strong>MAX_LOOP of 30</strong> iterations and <strong>MAX_DEPTH of 10</strong> agent handoffs to prevent infinite loops.
+                </div>
+            </div>
+
+            <!-- ITool -->
+            <div class="api-block" id="api-itool">
+                <div class="api-block-header">
+                    <div class="api-badge badge-interface">interface</div>
+                    <h3 class="api-name">ITool&lt;Input, Result&gt;</h3>
+                    <span class="api-import">from 'shastra-sdk'</span>
+                </div>
+                <p class="api-desc">The tool interface. All tools given to agents must implement this interface.</p>
+                <div class="api-table-wrap">
+                    <table class="api-table">
+                        <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr><td><code>name</code></td><td><span class="tp-badge">string</span></td><td>Tool name used as function name in LLM calls</td></tr>
+                            <tr><td><code>description</code></td><td><span class="tp-badge">string</span></td><td>What this tool does (shown to the LLM)</td></tr>
+                            <tr><td><code>doc</code></td><td><span class="tp-badge">string?</span></td><td>Optional developer documentation string</td></tr>
+                            <tr><td><code>inputSchema</code></td><td><span class="tp-badge">ZodType&lt;Input&gt;</span></td><td>Zod schema to validate and parse tool input</td></tr>
+                            <tr><td><code>executor</code></td><td><span class="tp-badge">(input: Input) → Promise&lt;Result&gt;</span></td><td>Async function that performs the tool action</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- MEMORY SECTION -->
+    <section id="memory" class="section section-dark">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Graph Memory</span>
+                <h2 class="section-title">Persistent knowledge that<br/>grows over time</h2>
+                <p class="section-subtitle">Shastra maps every conversation into a rich Neo4j knowledge graph. Your agents get contextual memory automatically injected into every query.</p>
+            </div>
+
+            <div class="memory-layout">
+                <div class="memory-graph-panel">
+                    <div class="graph-schema">
+                        <h4 class="schema-title">Knowledge Graph Schema</h4>
+                        <div class="schema-nodes">
+                            <div class="schema-node node-user-s">User<span>:id</span></div>
+                            <div class="schema-node node-pref-s">Preference<span>:name, category, type</span></div>
+                            <div class="schema-node node-tech-s">Technology<span>:name, type</span></div>
+                            <div class="schema-node node-proj-s">Project<span>:name, description</span></div>
+                            <div class="schema-node node-topic-s">Topic<span>:name</span></div>
+                            <div class="schema-node node-person-s">Person<span>:name</span></div>
+                        </div>
+                        <h4 class="schema-title" style="margin-top: 1.5rem">Relationships</h4>
+                        <div class="schema-rels">
+                            <div class="schema-rel"><span class="rel-from">User</span><span class="rel-arrow">─[LIKES]─▶</span><span class="rel-to">Preference</span></div>
+                            <div class="schema-rel"><span class="rel-from">User</span><span class="rel-arrow">─[DISLIKES]─▶</span><span class="rel-to">Preference</span></div>
+                            <div class="schema-rel"><span class="rel-from">User</span><span class="rel-arrow">─[WORKS_ON]─▶</span><span class="rel-to">Project</span></div>
+                            <div class="schema-rel"><span class="rel-from">User</span><span class="rel-arrow">─[WORKS_WITH]─▶</span><span class="rel-to">Technology</span></div>
+                            <div class="schema-rel"><span class="rel-from">User</span><span class="rel-arrow">─[INTERESTED_IN]─▶</span><span class="rel-to">Topic</span></div>
+                            <div class="schema-rel"><span class="rel-from">User</span><span class="rel-arrow">─[KNOWS]─▶</span><span class="rel-to">Person</span></div>
+                            <div class="schema-rel"><span class="rel-from">Project</span><span class="rel-arrow">─[USES]─▶</span><span class="rel-to">Technology</span></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="memory-api-panel">
+                    <h4 class="panel-title">Memory API</h4>
+                    <div class="api-block small" id="api-makememory">
+                        <div class="api-block-header">
+                            <div class="api-badge badge-fn">fn</div>
+                            <h3 class="api-name">makeMemory()</h3>
+                        </div>
+                        <p class="api-desc">Analyzes conversation context, extracts entities, generates Cypher queries, and syncs the Neo4j graph.</p>
+                        <div class="code-block compact">
+                            <pre><code><span class="kw">await</span> <span class="fn">makeMemory</span>(
+  context?,  <span class="cmt">// string | RunContext | Message[]</span>
+  userId?    <span class="cmt">// default: "default_user"</span>
+): <span class="cls">MemoryMakerResult</span></code></pre>
+                        </div>
+                    </div>
+
+                    <div class="api-block small" id="api-startgraph">
+                        <div class="api-block-header">
+                            <div class="api-badge badge-fn">fn</div>
+                            <h3 class="api-name">startGraphMemory()</h3>
+                        </div>
+                        <p class="api-desc">Starts a background interval that automatically syncs new conversation messages to the graph.</p>
+                        <div class="code-block compact">
+                            <pre><code><span class="fn">startGraphMemory</span>({
+  credentials?: <span class="cls">Neo4jCredentials</span>,
+  intervalMs?: <span class="tp">number</span>,
+  userId?: <span class="tp">string</span>,
+  runImmediately?: <span class="tp">boolean</span>
+})</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="api-block small" id="api-querycontext">
+                        <div class="api-block-header">
+                            <div class="api-badge badge-fn">fn</div>
+                            <h3 class="api-name">makeQueryContext()</h3>
+                        </div>
+                        <p class="api-desc">Analyzes a user query, generates read-only Cypher queries, and returns formatted graph context for the LLM.</p>
+                        <div class="code-block compact">
+                            <pre><code><span class="kw">const</span> ctx = <span class="kw">await</span> <span class="fn">makeQueryContext</span>(
+  query: <span class="tp">string</span>,
+  userId?: <span class="tp">string</span>
+): <span class="cls">Promise</span>&lt;<span class="tp">string</span>&gt;</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FULL MEMORY WALKTHROUGH -->
+            <div class="memory-walkthrough">
+                <div class="walkthrough-header">
+                    <span class="section-tag" style="margin-bottom:0">Full Walkthrough</span>
+                    <h3 class="walkthrough-title">Graph Memory — end-to-end in code</h3>
+                    <p class="walkthrough-sub">How each piece fits together: Neo4j init → background sync → agent run with auto-context injection → manual extraction → shutdown.</p>
+                </div>
+                <div class="walkthrough-steps">
+
+                    <div class="walkthrough-step">
+                        <div class="step-num">01</div>
+                        <div class="step-body">
+                            <h4>Initialize Neo4j &amp; create constraints</h4>
+                            <p>Call <code>initNeo4j()</code> once at startup. <code>verifyConnection()</code> pings the DB. <code>ensureGraphConstraints()</code> creates uniqueness constraints on each node type so <code>MERGE</code> never duplicates nodes.</p>
+                            <div class="code-block compact">
+                                <pre><code><span class="kw">import</span> { initNeo4j, verifyConnection, ensureGraphConstraints } <span class="kw">from</span> <span class="str">'shastra-sdk'</span>;
+
+<span class="fn">initNeo4j</span>({ uri: <span class="str">'bolt://localhost:7687'</span>, username: <span class="str">'neo4j'</span>, password: <span class="str">'pass'</span> });
+<span class="kw">const</span> ok = <span class="kw">await</span> <span class="fn">verifyConnection</span>();    <span class="cmt">// → true</span>
+<span class="kw">await</span> <span class="fn">ensureGraphConstraints</span>();          <span class="cmt">// run once — idempotent</span></code></pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="walkthrough-step">
+                        <div class="step-num">02</div>
+                        <div class="step-body">
+                            <h4>Start background memory sync</h4>
+                            <p><code>startGraphMemory()</code> launches a <code>setInterval</code> that watches <code>globalContext</code>. Every tick it calls <code>getUpdatedContext()</code> to get only <em>new</em> messages since the last sync, then calls <code>makeMemory(delta, userId)</code> — so the LLM only processes fresh content, not the full history.</p>
+                            <div class="code-block compact">
+                                <pre><code><span class="kw">import</span> { startGraphMemory, isGraphUpdaterRunning } <span class="kw">from</span> <span class="str">'shastra-sdk'</span>;
+
+<span class="fn">startGraphMemory</span>({
+  userId:         <span class="str">'user_123'</span>,
+  intervalMs:     <span class="num">120_000</span>,    <span class="cmt">// how often to check for new messages</span>
+  runImmediately: <span class="kw">false</span>,       <span class="cmt">// don't run before the first turn</span>
+  verifyOnStart:  <span class="kw">true</span>         <span class="cmt">// ping Neo4j before starting the timer</span>
+});
+
+console.<span class="fn">log</span>(<span class="fn">isGraphUpdaterRunning</span>()); <span class="cmt">// true</span></code></pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="walkthrough-step">
+                        <div class="step-num">03</div>
+                        <div class="step-body">
+                            <h4>Run the agent — context is injected automatically</h4>
+                            <p>Once the graph updater is running, <code>isUsingGraphDb()</code> returns <code>true</code>. Every <code>runner.run()</code> call then automatically invokes <code>makeQueryContext(query, userId)</code> and appends the result to the agent's system prompt as <em>"Relevant Knowledge Graph Context"</em>. Your instructions don't need to change.</p>
+                            <div class="code-block compact">
+                                <pre><code><span class="kw">import</span> { Shastra, Runner } <span class="kw">from</span> <span class="str">'shastra-sdk'</span>;
+
+<span class="kw">const</span> agent = <span class="kw">new</span> <span class="cls">Shastra</span>({
+  name:         <span class="str">'assistant'</span>,
+  description:  <span class="str">'Personalized AI assistant'</span>,
+  instructions: <span class="str">'Help the user based on what you know about them.'</span>
+});
+
+<span class="kw">const</span> runner = <span class="kw">new</span> <span class="cls">Runner</span>();
+
+<span class="cmt">// Turn 1 — user tells the agent something about themselves</span>
+<span class="kw">await</span> runner.<span class="fn">run</span>(agent, <span class="str">'I love TypeScript and I hate writing YAML.'</span>);
+
+<span class="cmt">// Turn 2 — graph context is automatically retrieved &amp; injected:</span>
+<span class="cmt">// System prompt now includes:</span>
+<span class="cmt">//   Relevant Knowledge Graph Context:</span>
+<span class="cmt">//   - WORKS_WITH: TypeScript [Type: Language]</span>
+<span class="cmt">//   - DISLIKES: YAML [Category: DevOps]</span>
+<span class="kw">const</span> reply = <span class="kw">await</span> runner.<span class="fn">run</span>(agent, <span class="str">'What config format should I use?'</span>);
+console.<span class="fn">log</span>(reply);
+<span class="cmt">// → "Since you dislike YAML, I'd recommend using TypeScript-native</span>
+<span class="cmt">//    configs or JSON — here's how..."</span></code></pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="walkthrough-step">
+                        <div class="step-num">04</div>
+                        <div class="step-body">
+                            <h4>Manually save memory with makeMemory()</h4>
+                            <p>The background sync calls <code>makeMemory()</code> on a timer. You can also call it on-demand — after an important session, from a webhook, or at logout. Pass <code>undefined</code> to use <code>globalContext</code>, or pass any string or message array for custom context.</p>
+                            <div class="code-block compact">
+                                <pre><code><span class="kw">import</span> { makeMemory } <span class="kw">from</span> <span class="str">'shastra-sdk'</span>;
+
+<span class="cmt">// Uses globalContext automatically</span>
+<span class="kw">const</span> result = <span class="kw">await</span> <span class="fn">makeMemory</span>(<span class="kw">undefined</span>, <span class="str">'user_123'</span>);
+console.<span class="fn">log</span>(result.success);                 <span class="cmt">// true</span>
+console.<span class="fn">log</span>(result.extracted.entities);
+<span class="cmt">// [{name:'TypeScript', type:'Technology', relationshipToUser:'WORKS_WITH'},</span>
+<span class="cmt">//  {name:'YAML', type:'Preference_Dislike', relationshipToUser:'DISLIKES'}]</span>
+console.<span class="fn">log</span>(result.extracted.queries.<span class="fn">length</span>); <span class="cmt">// 4 Cypher MERGE queries executed</span>
+
+<span class="cmt">// Or from a plain string</span>
+<span class="kw">const</span> r2 = <span class="kw">await</span> <span class="fn">makeMemory</span>(<span class="str">'I am building an SDK called Shastra.'</span>, <span class="str">'user_123'</span>);
+<span class="cmt">// → Project node "Shastra" created in Neo4j</span>
+
+<span class="cmt">// Check if a node already exists before writing</span>
+<span class="kw">import</span> { checkNodeExists } <span class="kw">from</span> <span class="str">'shastra-sdk'</span>;
+<span class="kw">const</span> exists = <span class="kw">await</span> <span class="fn">checkNodeExists</span>(<span class="str">'Technology'</span>, <span class="str">'name'</span>, <span class="str">'TypeScript'</span>);
+console.<span class="fn">log</span>(exists); <span class="cmt">// true</span></code></pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="walkthrough-step">
+                        <div class="step-num">05</div>
+                        <div class="step-body">
+                            <h4>Graceful shutdown</h4>
+                            <p><code>stopGraphMemory(true)</code> stops the interval, awaits any in-flight <code>makeMemory()</code> call to finish cleanly, then closes the Neo4j driver. Always call this on process exit — the timer is <code>.unref()</code>'d in Node.js so it won't block exit by itself, but you should still flush pending updates.</p>
+                            <div class="code-block compact">
+                                <pre><code><span class="kw">import</span> { stopGraphMemory } <span class="kw">from</span> <span class="str">'shastra-sdk'</span>;
+
+process.<span class="fn">on</span>(<span class="str">'SIGINT'</span>, <span class="kw">async</span> () => {
+  <span class="cmt">// true = also close the Neo4j driver after draining in-flight sync</span>
+  <span class="kw">await</span> <span class="fn">stopGraphMemory</span>(<span class="kw">true</span>);
+  process.<span class="fn">exit</span>(<span class="num">0</span>);
+});
+
+process.<span class="fn">on</span>(<span class="str">'SIGTERM'</span>, <span class="kw">async</span> () => {
+  <span class="kw">await</span> <span class="fn">stopGraphMemory</span>(<span class="kw">true</span>);
+  process.<span class="fn">exit</span>(<span class="num">0</span>);
+});</code></pre>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- GUARDRAILS -->
+    <section id="guardrails" class="section">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Safety</span>
+                <h2 class="section-title">Built-in guardrails on<br/>every message</h2>
+                <p class="section-subtitle">Shastra wraps every <code>runner.run()</code> call with LLM-powered safety checks. Zero configuration required.</p>
+            </div>
+
+            <div class="guardrails-grid">
+                <div class="guardrail-card">
+                    <div class="guardrail-header">
+                        <span class="guardrail-icon">🚦</span>
+                        <h3>Input Guardrail</h3>
+                        <span class="guardrail-dir">User → Agent</span>
+                    </div>
+                    <p>Checks every user message before the agent processes it.</p>
+                    <ul class="guardrail-list">
+                        <li><span class="block-icon">✗</span> Sexual or hacking-related content</li>
+                        <li><span class="block-icon">✗</span> Personal identifying information</li>
+                        <li><span class="block-icon">✗</span> Malicious system operations</li>
+                    </ul>
+                </div>
+
+                <div class="guardrail-card">
+                    <div class="guardrail-header">
+                        <span class="guardrail-icon">🔒</span>
+                        <h3>Output Guardrail</h3>
+                        <span class="guardrail-dir">Agent → User</span>
+                    </div>
+                    <p>Checks every agent response before returning it to the caller.</p>
+                    <ul class="guardrail-list">
+                        <li><span class="block-icon">✗</span> Leaked API keys or passwords</li>
+                        <li><span class="block-icon">✗</span> Database URLs or credentials</li>
+                        <li><span class="block-icon">✗</span> Offensive or political content</li>
+                    </ul>
+                </div>
+
+                <div class="guardrail-card">
+                    <div class="guardrail-header">
+                        <span class="guardrail-icon">⚠️</span>
+                        <h3>GuardrailError</h3>
+                        <span class="guardrail-dir">Error Class</span>
+                    </div>
+                    <p>Violations throw a typed <code>GuardrailError</code> with a detailed reason.</p>
+                    <div class="code-block compact" style="margin-top: 1rem;">
+                        <pre><code><span class="kw">try</span> {
+  <span class="kw">await</span> runner.<span class="fn">run</span>(agent, input);
+} <span class="kw">catch</span> (e) {
+  <span class="kw">if</span> (e <span class="kw">instanceof</span> <span class="cls">GuardrailError</span>) {
+    e.message   <span class="cmt">// "Input rejected"</span>
+    e.reason    <span class="cmt">// "Violates safety policy"</span>
+  }
+}</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ENV CONFIG -->
+    <section class="section section-dark" id="config">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Configuration</span>
+                <h2 class="section-title">Environment Variables</h2>
+            </div>
+            <div class="env-table-wrap">
+                <table class="env-table">
+                    <thead>
+                        <tr><th>Variable</th><th>Required</th><th>Default</th><th>Description</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>API_KEY</code></td><td><span class="req-yes">Required</span></td><td>—</td><td>OpenAI or compatible API key</td></tr>
+                        <tr><td><code>BASE_URL</code></td><td><span class="req-no">Optional</span></td><td>OpenAI default</td><td>Custom base URL (e.g. OpenRouter)</td></tr>
+                        <tr><td><code>NEO4J_URI</code></td><td><span class="req-no">Optional</span></td><td><code>bolt://localhost:7687</code></td><td>Neo4j Bolt connection URI</td></tr>
+                        <tr><td><code>NEO4J_USERNAME</code></td><td><span class="req-no">Optional</span></td><td><code>neo4j</code></td><td>Neo4j database username</td></tr>
+                        <tr><td><code>NEO4J_PASSWORD</code></td><td><span class="req-no">Optional</span></td><td>empty</td><td>Neo4j database password</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="code-block" style="margin-top: 2rem;">
+                <div class="code-header">
+                    <span class="code-lang">.env</span>
+                    <button class="copy-code-btn" onclick="copyCode('env-code')" id="copy-env-btn">Copy</button>
+                </div>
+                <pre id="env-code"><code><span class="cmt"># Required</span>
+API_KEY=sk-xxxxxxxxxxxxxxxxxx
+BASE_URL=https://openrouter.ai/api/v1
+
+<span class="cmt"># Optional — for graph memory</span>
+NEO4J_URI=bolt://localhost:7687
+NEO4J_USERNAME=neo4j
+NEO4J_PASSWORD=your_password</code></pre>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer id="footer">
+        <div class="container">
+            <div class="footer-inner">
+                <div class="footer-brand">
+                    <div class="footer-logo">
+                        <span class="logo-icon">◈</span>
+                        <span class="logo-text">shastra<span class="logo-accent">-sdk</span></span>
+                    </div>
+                    <p class="footer-tagline">AI agents that remember.</p>
+                </div>
+                <div class="footer-links">
+                    <div class="footer-col">
+                        <h5>Resources</h5>
+                        <a href="#quickstart">Quick Start</a>
+                        <a href="#api">API Reference</a>
+                        <a href="#memory">Graph Memory</a>
+                        <a href="#guardrails">Guardrails</a>
+                    </div>
+                    <div class="footer-col">
+                        <h5>Package</h5>
+                        <a href="https://www.npmjs.com/package/shastra-sdk" target="_blank">npm</a>
+                        <a href="https://github.com/gopallalwani09/Shastra-Agent-SDK" target="_blank">GitHub</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2026 Gopal Lalwani · ISC License</p>
+                <p>Built with ❤️ in TypeScript</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

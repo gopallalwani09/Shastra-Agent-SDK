@@ -1,14 +1,28 @@
 {
-  "name": "agent-sdk",
+  "name": "shastra-sdk",
   "version": "1.0.0",
-  "description": "",
+  "description": "SDK for building AI agents with graph memory support",
   "license": "ISC",
   "author": "Gopal Lalwani",
   "type": "module",
-  "main": "index.js",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "node src/index.js"
+    "dev": "tsx src/index.ts"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",
