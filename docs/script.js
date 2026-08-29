@@ -166,15 +166,13 @@ function copyInstall() {
 function copyCode(elementId) {
     const el = document.getElementById(elementId);
     if (!el) return;
-    const text = el.innerText || el.textContent;
+    const text = el.textContent || el.innerText;
     const btn = el.closest('.code-block')?.querySelector('.copy-code-btn');
     copyToClipboard(text, btn);
 }
 
 function copyToClipboard(text, btn) {
-    // Strip HTML tags if needed
-    const clean = text.replace(/<[^>]*>/g, '');
-    navigator.clipboard.writeText(clean).then(() => {
+    navigator.clipboard.writeText(text).then(() => {
         if (btn) {
             const original = btn.textContent;
             btn.textContent = '✓ Copied!';
@@ -189,7 +187,7 @@ function copyToClipboard(text, btn) {
     }).catch(() => {
         // Fallback
         const ta = document.createElement('textarea');
-        ta.value = clean;
+        ta.value = text;
         document.body.appendChild(ta);
         ta.select();
         document.execCommand('copy');
