@@ -10,6 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -310,14 +311,15 @@ console.<span class="fn">log</span>(result);</code></pre>
   startGraphMemory, stopGraphMemory,
   makeMemory
 } <span class="kw">from</span> <span class="str">'shastra-sdk'</span>;
+<span class="kw">import</span> <span class="str">'dotenv/config'</span>
 
 <span class="cmt">// ═══════════════════════════════════════════
 // 1. INIT  —  connect to Neo4j
 // ═══════════════════════════════════════════</span>
 <span class="fn">initNeo4j</span>({
-  uri:      <span class="str">'bolt://localhost:7687'</span>,
-  username: <span class="str">'neo4j'</span>,
-  password: <span class="str">'your_password'</span>
+  uri:      process.env.<span class="fn">NEO4J_URI</span>,
+  username: process.env.<span class="fn">NEO4J_USERNAME</span>,
+  password: process.env.<span class="fn">NEO4J_PASSWORD</span>
 });
 
 <span class="kw">const</span> ok = <span class="kw">await</span> <span class="fn">verifyConnection</span>();
@@ -330,12 +332,12 @@ console.<span class="fn">log</span>(result);</code></pre>
 <span class="cmt">// ═══════════════════════════════════════════
 // 2. START  —  launch background memory sync
 // ═══════════════════════════════════════════</span>
-<span class="cmt">// Every 2 minutes the SDK checks globalContext for new messages,
+<span class="cmt">// Every 5 seconds the SDK checks globalContext for new messages,
 // extracts entities (preferences, technologies, projects, …),
 // and writes them to Neo4j using generated Cypher MERGE queries.</span>
 <span class="fn">startGraphMemory</span>({
   userId:         <span class="str">'user_123'</span>,
-  intervalMs:     <span class="num">2 * 60 * 1000</span>,  <span class="cmt">// 2 minutes</span>
+  intervalMs:     <span class="num">5 * 1000</span>,        <span class="cmt">// 5 seconds</span>
   runImmediately: <span class="kw">false</span>,            <span class="cmt">// wait until first message arrives</span>
   verifyOnStart:  <span class="kw">true</span>             <span class="cmt">// ping DB once before starting timer</span>
 });
@@ -346,8 +348,7 @@ console.<span class="fn">log</span>(result);</code></pre>
 <span class="kw">const</span> agent = <span class="kw">new</span> <span class="cls">Shastra</span>({
   name:         <span class="str">'assistant'</span>,
   description:  <span class="str">'A personalized AI assistant with long-term memory'</span>,
-  instructions: <span class="str">'You are a helpful assistant. Use the Knowledge Graph</span>
-<span class="str">                 Context provided to personalize your responses.'</span>
+  instructions: <span class="str">'You are a helpful assistant.'</span>
 });
 
 <span class="kw">const</span> runner = <span class="kw">new</span> <span class="cls">Runner</span>();
@@ -368,16 +369,15 @@ console.<span class="fn">log</span>(reply);
 //    using TypeScript config files (e.g. vite.config.ts)..."</span>
 
 <span class="cmt">// Optional: force a memory save right now instead of waiting
-// for the next background tick.</span>
-<span class="kw">const</span> mem = <span class="kw">await</span> <span class="fn">makeMemory</span>(<span class="kw">undefined</span>, <span class="str">'user_123'</span>);
-console.<span class="fn">log</span>(`Saved ${mem.extracted.entities.<span class="fn">length</span>} entities to Neo4j`);
+// for the next background tick.
+// const mem = await makeMemory(undefined, 'user_123');
+// console.log(`Saved ${mem.extracted.entities.length} entities to Neo4j`);</span>
 
 <span class="cmt">// ═══════════════════════════════════════════
 // 4. STOP  —  graceful shutdown
 // ═══════════════════════════════════════════</span>
 <span class="cmt">// Drains any in-flight memory sync, then closes the Neo4j driver.</span>
-process.<span class="fn">on</span>(<span class="str">'SIGINT'</span>,  <span class="kw">async</span> () => { <span class="kw">await</span> <span class="fn">stopGraphMemory</span>(<span class="kw">true</span>); process.<span class="fn">exit</span>(<span class="num">0</span>); });
-process.<span class="fn">on</span>(<span class="str">'SIGTERM'</span>, <span class="kw">async</span> () => { <span class="kw">await</span> <span class="fn">stopGraphMemory</span>(<span class="kw">true</span>); process.<span class="fn">exit</span>(<span class="num">0</span>); });</code></pre>
+<span class="kw">await</span> <span class="fn">stopGraphMemory</span>(<span class="kw">true</span>);</code></pre>
                     </div>
                 </div>
             </div>
